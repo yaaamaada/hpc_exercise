@@ -3376,7 +3376,7 @@ int main(const int argc, const char** argv)
 		print_m256(m32f);
 
 		//cvtを使って
-		//XXXXXXXX
+		m32f = _mm256_cvtepi32_ps(m32i);
 
 		std::cout << "after convert" << std::endl;
 		print_m256(m32f);
@@ -3402,9 +3402,9 @@ int main(const int argc, const char** argv)
 		//aをfloatにキャストしてbへ書き込み
 		for (int i = 0; i < 32; i += 8)
 		{
-			//XXXXXXXX
-			//XXXXXXXX
-			//XXXXXXXX
+			__m128i ma = _mm_load_si128((const __m128i*)(a + i));
+			__m256i mb = _mm256_cvtepu8_epi32(ma);
+			_mm256_store_ps(b + i, _mm256_cvtepi32_ps(mb));
 		}
 
 		std::cout << "after convert: b" << std::endl;
@@ -3433,8 +3433,13 @@ int main(const int argc, const char** argv)
 		//ヒント：前半8個と後半8個に分けて8回処理する．packs_epi16で半分のサイズできる
 		//ヒント：下記のAVXの作りかけもヒントになる．
 		//XXXX 行数は任意
-		//XXXX
-		//XXXX
+		for (int i = 0; i < 16; i += 8)
+		{
+			__m128i mc1280 = _mm_load_si128((const __m128i*)(c + i));
+			__m128i mc1281 = _mm_load_si128((const __m128i*)(c + i + 4));
+			__m128i temp128 = _mm_packs_epi16(mc1280, mc1281);
+			_mm_store_si128((__m128i*)(d + i), temp128);
+		}
 
 		//結果の表示
 		std::cout << "after convert: d (SSE)" << std::endl;
@@ -3446,7 +3451,7 @@ int main(const int argc, const char** argv)
 		__m256i mc2561 = _mm256_load_si256((__m256i*)(c + 8));
 		__m256i temp256 = _mm256_packs_epi16(mc2560, mc2561);
 		//permuteをしていないため結果がおかしい
-		//XXXXXXXX temp256をpermute
+		temp256 = _mm256_permute4x64_epi64(temp256, 0b11011000);  // temp256をpermute
 
 		_mm256_store_si256((__m256i*)d, temp256);
 
