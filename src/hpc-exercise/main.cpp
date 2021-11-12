@@ -3402,7 +3402,7 @@ int main(const int argc, const char** argv)
 		//aをfloatにキャストしてbへ書き込み
 		for (int i = 0; i < 32; i += 8)
 		{
-			__m128i ma = _mm_load_si128((const __m128i*)(a + i));
+			__m128i ma = _mm_loadu_si128((const __m128i*)(a + i));
 			__m256i mb = _mm256_cvtepu8_epi32(ma);
 			_mm256_store_ps(b + i, _mm256_cvtepi32_ps(mb));
 		}
