@@ -2978,9 +2978,9 @@ int main(const int argc, const char** argv)
 
 				__m256 temp;
 				//cmp, mul, blendvを使って（blendを使わずにビット演算でもできる）
-				//XXXXXXXX
-				//XXXXXXXX
-				//XXXXXXXX
+				temp = _mm256_mul_ps(_mm256_mul_ps(ma, ma), ma);
+				__m256 mask = _mm256_cmp_ps(ma, mth, _CMP_GE_OS);
+				temp = _mm256_blendv_ps(ma, temp, mask);
 
 				_mm256_store_ps(b.data + i, temp);
 			}
@@ -3504,7 +3504,11 @@ int main(const int argc, const char** argv)
 			{
 				for (int i = 0; i < size; i++)
 				{
-					//XXXXXXXX ans.data[j * size + i] = ここだけ，ansに書き込み
+					// ここだけ，ansに書き込み
+					if(a.data[j * size + i] >= threshold)
+						ans.data[j * size + i] = a.data[j * size + i] * a.data[j * size + i] * a.data[j * size + i];
+					else
+						ans.data[j * size + i] = a.data[j * size + i];
 				}
 			}
 			t.end();
@@ -3517,12 +3521,16 @@ int main(const int argc, const char** argv)
 		{
 			//スカラー，並列化実装
 			t.start();
-			//XXXXXXXX
+			#pragma omp parallel for
 			for (int j = 0; j < size; ++j)
 			{
 				for (int i = 0; i < size; i++)
 				{
-					//XXXXXXXX　= bに書き込み書き込み
+					// bに書き込み書き込み
+					if(a.data[j * size + i] >= threshold)
+						b.data[j * size + i] = a.data[j * size + i] * a.data[j * size + i] * a.data[j * size + i];
+					else
+						b.data[j * size + i] = a.data[j * size + i];
 				}
 			}
 			t.end();
@@ -3534,15 +3542,16 @@ int main(const int argc, const char** argv)
 		{
 			//SIMD実装
 			t.start();
-			//XXXXXXXX（閾値のセット）
+			const __m256 mth = _mm256_set1_ps(threshold);  //XXXXXXXX（閾値のセット）
 			for (int j = 0; j < size; ++j)
 			{
 				for (int i = 0; i < size; i += 8)
 				{
-					//XXXXXXXX
-					//XXXXXXXX
-					//XXXXXXXX
-					//XXXXXXXX
+					__m256 ma = _mm256_load_ps(a.data + j * size + i);
+					__m256 temp = _mm256_mul_ps(ma, _mm256_mul_ps(ma, ma));
+					__m256 mask = _mm256_cmp_ps(ma, mth, _CMP_GE_OS);
+					temp = _mm256_blendv_ps(ma, temp, mask);
+					_mm256_store_ps(b.data + j * size + i, temp);
 				}
 			}
 			t.end();
@@ -3554,16 +3563,17 @@ int main(const int argc, const char** argv)
 		{
 			//SIMD，並列化実装
 			t.start();
-			//XXXXXXXX
+			#pragma omp parallel for
 			for (int j = 0; j < size; ++j)
 			{
-				//XXXXXXXX（閾値のセット）	
+				const __m256 mth = _mm256_set1_ps(threshold);  //XXXXXXXX（閾値のセット）	
 				for (int i = 0; i < size; i += 8)
 				{
-					//XXXXXXXX
-					//XXXXXXXX
-					//XXXXXXXX
-					//XXXXXXXX
+					const __m256 ma = _mm256_load_ps(a.data + j * size + i);
+					__m256 temp = _mm256_mul_ps(_mm256_mul_ps(ma, ma), ma);
+					__m256 mask = _mm256_cmp_ps(ma, mth, _CMP_GE_OS);
+					temp = _mm256_blendv_ps(ma, temp, mask);
+					_mm256_store_ps(b.data + j * size + i, temp);
 				}
 			}
 			t.end();
