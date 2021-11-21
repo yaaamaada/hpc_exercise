@@ -263,6 +263,7 @@ int main(const int argc, const char** argv)
 			t.end();
 		}
 		std::cout << "|opt1. | " << t.getAvgTime() << "|" << calcPSNR(reference, dest) << "      |" << std::endl;
+		writePXM("imgout/gamma_fast1.ppm", dest);
 
 		for (int k = 0; k < loop; k++)
 		{
@@ -273,7 +274,8 @@ int main(const int argc, const char** argv)
 		}
 		std::cout << "|opt2. | " << t.getAvgTime() << "|" << calcPSNR(reference, dest) << "      |" << std::endl;
 
-		writePXM("imgout/gamma.ppm", dest);
+		writePXM("imgout/gamma_fast2.ppm", dest);
+		writePXM("imgout/gamma.ppm", reference);
 		return 0;
 	}
 
@@ -482,7 +484,25 @@ void GammaCorrectionFast1(const Image_8U& src, Image_8U& dest, const float gamma
 	dest = Image_8U(src.rows, src.cols, src.channels);
 	const int cn = src.channels;
 	//ここを実装
-
+	// LUT，ループ潰し，ループアンローリング，スレッド並列化
+	float pows_rcpgamma[256];
+	#pragma omp parallel for
+	for (int i = 0; i < 256; i++)
+	{
+		pows_rcpgamma[i] = pow((float)i / 255.f, 1.f/gamma);
+	}
+	#pragma omp parallel for
+	for (int x = 0; x < src.rows * src.cols * cn; x += 8)
+	{
+		dest.data[x + 0] = (unsigned char)(pows_rcpgamma[(int)src.data[x + 0]] * 255.0f + 0.5f);
+		dest.data[x + 1] = (unsigned char)(pows_rcpgamma[(int)src.data[x + 1]] * 255.0f + 0.5f);
+		dest.data[x + 2] = (unsigned char)(pows_rcpgamma[(int)src.data[x + 2]] * 255.0f + 0.5f);
+		dest.data[x + 3] = (unsigned char)(pows_rcpgamma[(int)src.data[x + 3]] * 255.0f + 0.5f);
+		dest.data[x + 4] = (unsigned char)(pows_rcpgamma[(int)src.data[x + 4]] * 255.0f + 0.5f);
+		dest.data[x + 5] = (unsigned char)(pows_rcpgamma[(int)src.data[x + 5]] * 255.0f + 0.5f);
+		dest.data[x + 6] = (unsigned char)(pows_rcpgamma[(int)src.data[x + 6]] * 255.0f + 0.5f);
+		dest.data[x + 7] = (unsigned char)(pows_rcpgamma[(int)src.data[x + 7]] * 255.0f + 0.5f);
+	}
 }
 
 void GammaCorrectionFast2(const Image_8U& src, Image_8U& dest, const float gamma)
@@ -490,6 +510,30 @@ void GammaCorrectionFast2(const Image_8U& src, Image_8U& dest, const float gamma
 	dest = Image_8U(src.rows, src.cols, src.channels);
 	const int cn = src.channels;
 	//ここを実装
+	// LUT，ループ潰し，SIMD， スレッド並列化
+	__attribute__ ((aligned(32))) float pows_rcpgamma[256];
+	#pragma omp parallel for
+	for (int i = 0; i < 256; i++)
+	{
+		pows_rcpgamma[i] = pow((float)i / 255.f, 1.f/gamma);
+	}
+	__m256 m255f = _mm256_set1_ps(255.f);
+	__m256 m05f = _mm256_set1_ps(0.5f);
+	#pragma omp parallel for
+	for (int x = 0; x < src.rows * src.cols * cn; x += 16)
+	{
+		__m128i ms8 = _mm_load_si128((const __m128i*)(src.data + x));
+		__m256i ms32_0, ms32_1;
+		ms32_0 = _mm256_cvtepu8_epi32(ms8);
+		ms32_1 = _mm256_cvtepu8_epi32(_mm_shuffle_epi32(ms8, _MM_SHUFFLE(1, 0, 3, 2)));
+		__m256 mpow32f_0 = _mm256_i32gather_ps(pows_rcpgamma, ms32_0, sizeof(float));
+		__m256 mdest32f_0 = _mm256_add_ps(_mm256_mul_ps(mpow32f_0, m255f), m05f);
+		__m256 mpow32f_1 = _mm256_i32gather_ps(pows_rcpgamma, ms32_1, sizeof(float));
+		__m256 mdest32f_1 = _mm256_add_ps(_mm256_mul_ps(mpow32f_1, m255f), m05f);
+
+		__m128i mdest8 = _mm256_cvtpsx2_epu8(mdest32f_0, mdest32f_1);
+		_mm_store_si128((__m128i*)(dest.data + x), mdest8);
+	}
 }
 
 ///////////////////////
@@ -540,11 +584,59 @@ void MeanVarAccFloat(const Image_8U& src, float& mean, float& var)
 void MeanVarFast1(const Image_8U& src, float& mean, float& var)
 {
 	//ここに1つ目を実装する
+	// スレッド並列化，ループ潰し，ループアンローリング
+	float m = 0.f;
+	float v = 0.f;
+	const int cn = src.channels;
+
+	#pragma omp parallel for reduction(+:m, v)
+	for (int x = 0; x < src.rows * src.cols * cn; x += 8)
+	{
+		m += (float)(src.data[x] + src.data[x + 1] + src.data[x + 2] + src.data[x + 3]
+		    + src.data[x + 4] + src.data[x + 5] + src.data[x + 6] + src.data[x + 7]);
+		v += src.data[x + 0] * src.data[x + 0] + src.data[x + 1] * src.data[x + 1]
+			+ src.data[x + 2] * src.data[x + 2] + src.data[x + 3] * src.data[x + 3]
+			+ src.data[x + 4] * src.data[x + 4] + src.data[x + 5] * src.data[x + 5]
+			+ src.data[x + 6] * src.data[x + 6] + src.data[x + 7] * src.data[x + 7];
+	}
+	m /= (float)(src.rows * src.cols * cn);
+	v = v / (float)(src.rows * src.cols * cn) - m * m;
+
+	mean = m;
+	var = v;
 }
 
 void MeanVarFast2(const Image_8U& src, float& mean, float& var)
 {
 	//ここに2つ目を実装する
+	// ループ潰し，SIMD
+	const int cn = src.channels;
+	__m256 mmean = _mm256_setzero_ps();
+	__m256 mvar = _mm256_setzero_ps();
+	for (int x = 0; x < src.rows * src.cols * cn; x += 16)
+	{
+		__m128i ms8 = _mm_load_si128((const __m128i*)(src.data + x));
+
+		__m256 ms32f_0, ms32f_1;
+		_mm256_cvtepu8_psx2(ms8, ms32f_0, ms32f_1);
+
+		mmean = _mm256_add_ps(mmean, _mm256_add_ps(ms32f_0, ms32f_1));
+
+		__m256 msq32f_0 = _mm256_mul_ps(ms32f_0, ms32f_0);
+		__m256 msq32f_1 = _mm256_mul_ps(ms32f_1, ms32f_1);
+		mvar = _mm256_add_ps(mvar, _mm256_add_ps(msq32f_0, msq32f_1));
+	}
+
+	mmean = _mm256_hadd_ps(mmean, mmean);
+	mmean = _mm256_hadd_ps(mmean, mmean);
+	float m = (((float*)&mmean)[0] + ((float*)&mmean)[4]) / (float)(src.rows * src.cols * cn);
+
+	mvar = _mm256_hadd_ps(mvar, mvar);
+	mvar = _mm256_hadd_ps(mvar, mvar);
+	float v = (((float*)&mvar)[0] + ((float*)&mvar)[4]) / (float)(src.rows * src.cols * cn) - m * m;
+
+	mean = m;
+	var = v;
 }
 
 
