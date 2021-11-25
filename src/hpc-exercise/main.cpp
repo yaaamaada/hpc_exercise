@@ -219,6 +219,7 @@ int main(const int argc, const char** argv)
 				//計算 yに書き込み
 				const float v = x.data[i];
 				//y.data[i] = XXXXXXXX;
+				y.data[i] = (((((v + 1) * v + 1) * v + 1) * v * v * v) + 1) * 3.f;
 			}
 			t.end();
 			//std::cout << "after : time: " << t.getLastTime() << " ms" << std::endl;
@@ -267,7 +268,7 @@ int main(const int argc, const char** argv)
 			for (int i = 0; i < s; i++)
 			{
 				//計算 ansに書き込み
-				//ans.data[i] = XXXXXXXX
+				ans.data[i] = (2 * M_PI + sqrt(5) + pow(0.5, 2)) * x.data[i];
 			}
 
 			t.end();
@@ -283,11 +284,11 @@ int main(const int argc, const char** argv)
 			//先に計算する場合
 			t.start();
 			const int s = x.rows * x.cols;
-			//XXXXXXXX //定数値を計算
+			const double const_value = 2 * M_PI + sqrt(5) + pow(0.5, 2);  //定数値を計算
 			for (int i = 0; i < s; i++)
 			{
 				//計算 yに書き込み
-				//y.data[i] = XXXXXXXX;
+				y.data[i] = const_value * x.data[i];
 			}
 			t.end();
 			//std::cout << "after : time: " << t.getLastTime() << " ms" << std::endl;
@@ -421,7 +422,7 @@ int main(const int argc, const char** argv)
 				for (int i = 0; i < x.cols; i++)
 				{
 					//計算 ansに書き込み
-					//ans.data[XXXXXXXX]=xxxx
+					ans.data[j * x.cols + i] = x.data[j * x.cols + i] / 3.141592;
 				}
 			}
 			t.end();
@@ -441,7 +442,7 @@ int main(const int argc, const char** argv)
 				for (int i = 0; i < x.cols; i++)
 				{
 					//計算
-					//y.data[XXXXXXXX]=xxxxx
+					y.data[j * x.cols + i] = x.data[j * x.cols + i] * 0.3183099;
 				}
 			}
 			t.end();
@@ -458,7 +459,7 @@ int main(const int argc, const char** argv)
 			for (int i = 0; i < s; i++)
 			{
 				//計算
-				//ans.data[XXXXXXXX]=xxxx
+				ans.data[i] = x.data[i] / 3.141592;
 			}
 			t.end();
 			//std::cout << "after : time: " << t.getLastTime() << " ms" << std::endl;
@@ -473,7 +474,7 @@ int main(const int argc, const char** argv)
 			for (int i = 0; i < size; i++)
 			{
 				//計算
-				//y.data[XXXXXXXX]=xxxxx
+				y.data[i] = x.data[i] * 0.3183099;
 			}
 			t.end();
 			//std::cout << "after : time: " << t.getLastTime() << " ms" << std::endl;
@@ -528,7 +529,7 @@ int main(const int argc, const char** argv)
 				for (int i = 0; i < ans.cols; i++)
 				{
 					//計算 ansに書き込み
-					//ans.data[XXXXXXXX]=xxxx
+					ans.data[i] = (a.data[i] / b.data[i] )* (c.data[i] / d.data[i]);
 				}
 			}
 			t.end();
@@ -548,7 +549,7 @@ int main(const int argc, const char** argv)
 				for (int i = 0; i < ret.cols; i++)
 				{
 					//計算 retに書き込み
-					//ret.data[XXXXXXXX]=xxxx
+					ret.data[i] = (a.data[i] * c.data[i]) / (b.data[i] * d.data[i]);
 				}
 			}
 			t.end();
@@ -618,7 +619,7 @@ int main(const int argc, const char** argv)
 			for (int i = 0; i < s; i++)
 			{
 				//計算（retに入れる）
-				//ret.data[i] = xxxxx;
+				ret.data[i] = x.data[i] * x.data[i];
 			}
 			t.end();
 		}
@@ -649,7 +650,7 @@ int main(const int argc, const char** argv)
 			for (int i = 0; i < s; i++)
 			{
 				//計算
-				//ret.data[i] = xxxx;
+				ret.data[i] = x.data[i] * x.data[i] * x.data[i];
 			}
 			t.end();
 		}
@@ -680,7 +681,7 @@ int main(const int argc, const char** argv)
 			for (int i = 0; i < s; i++)
 			{
 				//計算
-				//ret.data[i] = xxxx;
+				ret.data[i] = x.data[i] * x.data[i] * x.data[i] * x.data[i];
 			}
 			t.end();
 		}
@@ -689,7 +690,7 @@ int main(const int argc, const char** argv)
 
 
 		//n乗をpow計算(nを変える問題．powは32をサンプルとして入力している．)
-		pow_n = 32;
+		pow_n = 8;
 		for (int j = 0; j < loop; j++)
 		{
 			t.start();
@@ -711,7 +712,7 @@ int main(const int argc, const char** argv)
 			const int s = x.rows * x.cols;
 			for (int i = 0; i < s; i++)
 			{
-				//ret.data[i] = xxxx
+				ret.data[i] = x.data[i] * x.data[i] * x.data[i] * x.data[i] * x.data[i] * x.data[i] * x.data[i] * x.data[i];
 			}
 			t.end();
 		}
@@ -788,7 +789,7 @@ int main(const int argc, const char** argv)
 		{
 			t.start();
 			// char
-			//XXXXXXXX
+			mat_add(a_8s, b_8s, ret_8s);
 			t.end();
 			//std::cout<< "time: " << t.getLastTime() << " ms" << std::endl;
 		}
@@ -799,7 +800,7 @@ int main(const int argc, const char** argv)
 		{
 			t.start();
 			//short
-			//XXXXXXXX
+			mat_add(a_16s, b_16s, ret_16s);
 			t.end();
 			//std::cout<< "time: " << t.getLastTime() << " ms" << std::endl;
 		}
@@ -811,7 +812,7 @@ int main(const int argc, const char** argv)
 		{
 			t.start();
 			//int
-			//XXXXXXXX
+			mat_add(a_32s, b_32s, ret_32s);
 			t.end();
 			//std::cout<< "time: " << t.getLastTime() << " ms" << std::endl;
 		}
@@ -823,7 +824,7 @@ int main(const int argc, const char** argv)
 		{
 			t.start();
 			//float
-			//XXXXXXXX
+			mat_add(a_32f, b_32f, ret_32f);
 			t.end();
 			//std::cout<< "time: " << t.getLastTime() << " ms" << std::endl;
 		}
@@ -835,7 +836,7 @@ int main(const int argc, const char** argv)
 		{
 			t.start();
 			//double
-			//XXXXXXXX
+			mat_add(a_64f, b_64f, ret_64f);
 			t.end();
 			//std::cout<< "time: " << t.getLastTime() << " ms" << std::endl;
 		}
@@ -893,7 +894,7 @@ int main(const int argc, const char** argv)
 			const int size = ret_32s.cols * ret_32s.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX ret_32s.data[i]=xxxx
+				ret_32s.data[i] = x_32s.data[i] * 2;
 			}
 			t.end();
 		}
@@ -909,7 +910,7 @@ int main(const int argc, const char** argv)
 			const int size = ret_32s.cols * ret_32s.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX ret_32s.data[i] =xxx
+				ret_32s.data[i] = x_32s.data[i] * 2.0f;
 			}
 			t.end();
 		}
@@ -923,7 +924,7 @@ int main(const int argc, const char** argv)
 			const int size = ret_32s.cols * ret_32s.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX ret_32s.data[i] =xxx
+				ret_32s.data[i] = x_32s.data[i] << 1;
 			}
 			t.end();
 		}
@@ -939,7 +940,7 @@ int main(const int argc, const char** argv)
 			const int size = ret_32s.cols * ret_32s.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX ret_32s.data[i] =xxx
+				ret_32s.data[i] = x_32s.data[i] / 2;
 			}
 			t.end();
 		}
@@ -953,7 +954,7 @@ int main(const int argc, const char** argv)
 			const int size = ret_32s.cols * ret_32s.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX ret_32s.data[i] =xxx
+				ret_32s.data[i] = x_32s.data[i] / 2.0;
 			}
 			t.end();
 		}
@@ -967,7 +968,7 @@ int main(const int argc, const char** argv)
 			const int size = ret_32s.cols * ret_32s.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX ret_32s.data[i] =xxx
+				ret_32s.data[i] = x_32s.data[i] * 0.5;
 			}
 			t.end();
 		}
@@ -981,7 +982,7 @@ int main(const int argc, const char** argv)
 			const int size = ret_32s.cols * ret_32s.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX ret_32s.data[i] =xxx
+				ret_32s.data[i] = x_32s.data[i] >> 1;
 			}
 			t.end();
 		}
@@ -1003,7 +1004,7 @@ int main(const int argc, const char** argv)
 			const int size = ret_32f.cols * ret_32f.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX
+				ret_32f.data[i] = x_32f.data[i] / 2.f;
 			}
 			t.end();
 		}
@@ -1017,7 +1018,7 @@ int main(const int argc, const char** argv)
 			const int size = ret_32f.cols * ret_32f.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX
+				ret_32f.data[i] = x_32f.data[i] * 0.5f;
 			}
 			t.end();
 		}
@@ -1063,6 +1064,7 @@ int main(const int argc, const char** argv)
 			for (int i = 0; i < size; i++)
 			{
 				//XXXXXXXX ans_32f.data[i] =
+				ans_32f.data[i] = x_32f.data[i] * 3.141f;
 			}
 			t.end();
 		}
@@ -1075,6 +1077,8 @@ int main(const int argc, const char** argv)
 		mat_rand(x_32s, 0, 100);
 		Mat_32S ret_32s(row, col);
 
+		x_32s = Mat_32S(x_32f);
+
 		//int floating point mul
 		for (int k = 0; k < loop; k++)
 		{
@@ -1083,6 +1087,7 @@ int main(const int argc, const char** argv)
 			for (int i = 0; i < size; i++)
 			{
 				//XXXXXXXX ret_32s.data[i] =
+				ret_32s.data[i] = x_32s.data[i] * 3.141;
 			}
 			t.end();
 		}
@@ -1097,6 +1102,7 @@ int main(const int argc, const char** argv)
 			for (int i = 0; i < size; i++)
 			{
 				//XXXXXXXX ret_32s.data[i]
+				ret_32s.data[i] = (3217 * x_32s.data[i]) >> 10;
 			}
 			t.end();
 		}
@@ -1107,6 +1113,8 @@ int main(const int argc, const char** argv)
 		mat_rand(x_16s, 0, 100);
 		Mat_16S ret_16s(row, col);
 
+		x_16s = Mat_16S(x_32f);
+
 		//short fix
 		for (int k = 0; k < loop; k++)
 		{
@@ -1116,6 +1124,7 @@ int main(const int argc, const char** argv)
 			for (int i = 0; i < size; i++)
 			{
 				//XXXXXXXX ret_16s.data[i] =
+				ret_16s.data[i] = (3217 * x_16s.data[i]) >> 10;
 			}
 			t.end();
 		}
@@ -1165,7 +1174,7 @@ int main(const int argc, const char** argv)
 			const int size = x_32f.cols * x_32f.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX ret_32f.data[i] =
+				ret_32f.data[i] = x_32f.data[i] + 3.141592f;
 			}
 			t.end();
 		}
@@ -1180,7 +1189,7 @@ int main(const int argc, const char** argv)
 			const int size = x_32f.cols * x_32f.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX
+				ret_32f.data[i] = x_32f.data[i] * 3.141592f;
 			}
 			t.end();
 		}
@@ -1193,7 +1202,7 @@ int main(const int argc, const char** argv)
 			const int size = x_32f.cols * x_32f.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX
+				ret_32f.data[i] = x_32f.data[i] / 3.141592f;
 			}
 			t.end();
 		}
@@ -1207,7 +1216,7 @@ int main(const int argc, const char** argv)
 			const int size = x_32f.cols * x_32f.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX
+				ret_32f.data[i] = sqrt(x_32f.data[i]);
 			}
 			t.end();
 		}
@@ -1221,7 +1230,7 @@ int main(const int argc, const char** argv)
 			const int size = x_32f.cols * x_32f.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX
+				ret_32f.data[i] = sin(x_32f.data[i]);
 			}
 			t.end();
 		}
@@ -1235,7 +1244,7 @@ int main(const int argc, const char** argv)
 			const int size = x_32f.cols * x_32f.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX
+				ret_32f.data[i] = cos(x_32f.data[i]);
 			}
 			t.end();
 		}
@@ -1249,7 +1258,7 @@ int main(const int argc, const char** argv)
 			const int size = x_32f.cols * x_32f.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX
+				ret_32f.data[i] = exp(x_32f.data[i]);
 			}
 			t.end();
 		}
@@ -1263,7 +1272,7 @@ int main(const int argc, const char** argv)
 			const int size = x_32f.cols * x_32f.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX
+				ret_32f.data[i] = log(x_32f.data[i]);
 			}
 			t.end();
 		}
@@ -1295,7 +1304,7 @@ int main(const int argc, const char** argv)
 		for (int i = 0; i < 256; i++)
 		{
 			//LUT作成
-			//XXXXXXXX
+			LUT[i] = (float)sin(i);
 		}
 		for (int k = 0; k < loop; k++)
 		{
@@ -1304,7 +1313,7 @@ int main(const int argc, const char** argv)
 			const int size = x_32f.cols * x_32f.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX
+				ret_32f.data[i] = LUT[(int)x_32f.data[i]];
 			}
 			t.end();
 		}
@@ -1314,7 +1323,7 @@ int main(const int argc, const char** argv)
 		for (int i = 0; i < 256; i++)
 		{
 			//LUT作成
-			//XXXXXXXX
+			LUT[i] = (float)cos(i);
 		}
 		for (int k = 0; k < loop; k++)
 		{
@@ -1323,7 +1332,7 @@ int main(const int argc, const char** argv)
 			const int size = x_32f.cols * x_32f.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX
+				ret_32f.data[i] = LUT[(int)x_32f.data[i]];
 			}
 			t.end();
 		}
@@ -1333,7 +1342,7 @@ int main(const int argc, const char** argv)
 		for (int i = 0; i < 256; i++)
 		{
 			//LUT作成
-			//XXXXXXXX
+			LUT[i] = (float)exp(i);
 		}
 		for (int k = 0; k < loop; k++)
 		{
@@ -1342,7 +1351,7 @@ int main(const int argc, const char** argv)
 			const int size = x_32f.cols * x_32f.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX
+				ret_32f.data[i] = LUT[(int)x_32f.data[i]];
 			}
 			t.end();
 		}
@@ -1352,7 +1361,7 @@ int main(const int argc, const char** argv)
 		for (int i = 0; i < 256; i++)
 		{
 			//LUT作成
-			//XXXXXXXXX
+			LUT[i] = (float)log(i);
 		}
 		for (int k = 0; k < loop; k++)
 		{
@@ -1361,7 +1370,7 @@ int main(const int argc, const char** argv)
 			const int size = x_32f.cols * x_32f.rows;
 			for (int i = 0; i < size; i++)
 			{
-				//XXXXXXXX
+				ret_32f.data[i] = LUT[(int)x_32f.data[i]];
 			}
 			t.end();
 		}
@@ -1483,6 +1492,7 @@ int main(const int argc, const char** argv)
 			for (int i = 0; i < size; i++)
 			{
 				//XXXXXXXX call rot
+				rot(a.data[i], b.data[i], x.data[i], y.data[i], radian);
 			}
 			t.end();
 		}
@@ -1497,6 +1507,8 @@ int main(const int argc, const char** argv)
 			{
 				//XXXXXXXX
 				//XXXXXXXX
+				x.data[i] = a.data[i] * cos(radian);
+				y.data[i] = b.data[i] * sin(radian);
 			}
 			t.end();
 		}
@@ -1537,7 +1549,7 @@ int main(const int argc, const char** argv)
 				const int size = a.rows * a.cols;
 				for (int i = 0; i < size; i++)
 				{
-					//XXXXXXXX
+					c.data[i] = a.data[i] * b.data[i];
 				}
 				t.end();
 			}
@@ -1559,7 +1571,7 @@ int main(const int argc, const char** argv)
 				const int size = a.rows * a.cols;
 				for (int i = 0; i < size; i++)
 				{
-					//XXXXXXXX
+					a.data[i] = a.data[i] * b.data[i];
 				}
 				t.end();
 			}
