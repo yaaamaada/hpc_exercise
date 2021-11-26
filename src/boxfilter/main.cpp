@@ -414,10 +414,16 @@ void boxFilter_scalar_SoA_32F(const Image_32F& src, Image_32F& dest, const int r
 					{
 						//sum処理
 						//ここを実装
+						sum[0] += splitImg[0].data[(y + r + j) * splitImg[0].cols + (x + r + i)];
+						sum[1] += splitImg[1].data[(y + r + j) * splitImg[1].cols + (x + r + i)];
+						sum[2] += splitImg[2].data[(y + r + j) * splitImg[2].cols + (x + r + i)];
 					}
 				}
 				//store処理
 				//ここを実装
+				destSplitImg[0].data[y * destSplitImg[0].cols + x] = sum[0] / wsum;
+				destSplitImg[1].data[y * destSplitImg[1].cols + x] = sum[1] / wsum;
+				destSplitImg[2].data[y * destSplitImg[2].cols + x] = sum[2] / wsum;
 			}
 		}
 		merge(destSplitImg, 3, dest);//SoA->AoS
